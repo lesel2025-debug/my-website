@@ -144,18 +144,12 @@ em {font-style: normal;}
 	display: inline-flex;align-items: center;justify-content: center;
 	padding: 10px 12px 8px;
 }
-.brand-mark img {display: block;width: 40px;height: auto;transition: filter 0.4s;}
+.brand-mark img {display: block;width: 60px;height: auto;}
 @media (min-width: 820px) {
 	.brand-mark img {width: 80px;}
 	.brand-mark {padding: 6px 12px 4px;}
 	:root {--topbar-space: 160px;}	/*ロゴが大きくなった分、コンテンツの避け幅も広げる*/
 }
-/*背景を外したので、ロゴ(白×グレー)がそのままだと明るいセクションで見えにくくなる。
-  ナビと同じ仕組みで、背景の明暗(html.tone-light)に合わせて自動で色を反転させる。
-  v2はナビ文字・粒は全セクション共通で白のままにしたい為、ロゴだけは別の合図
-  (html.logo-invert。panel--paperの明るめグレー背景の時だけON)で切り替える*/
-html.tone-light .brand-mark img,
-html.logo-invert .brand-mark img {filter: invert(1);}
 
 .nav-toggle {
 	position: fixed;z-index: 120;
@@ -232,15 +226,17 @@ html.tone-light .nav-list a {color: var(--ink);}
    ============================================================= */
 .hero {
 	position: relative;z-index: 0;overflow: hidden;
-	width: 100%;height: 100%;
+	width: 100%;height: 100vh;height: 100dvh;	/*iOS Safariのツールバー分の高さ揺れに対応(dvh対応ブラウザはdvhを優先)*/
 }
 /*position:fixedのままだと動画がページの一番奥に永久に残り、スクロール後の
   他セクションで薄く透けて見えてしまう為、.hero(overflow:hidden)の中だけに
-  留まるposition:absoluteにしている*/
+  留まるposition:absoluteにしている。
+  以前はmin-width/min-height:100%で中央寄せしていたが、動画の縦横比によっては
+  異常に拡大されてしまう事があった為、object-fit:coverに変更している*/
 .hero-video {
-	position: absolute;top: 50%;left: 50%;z-index: -1;
-	min-width: 100%;min-height: 100%;
-	transform: translate(-50%,-50%);
+	position: absolute;inset: 0;z-index: -1;
+	width: 100%;height: 100%;
+	object-fit: cover;object-position: center;
 }
 .hero-video.is-sp {display: none;}
 @media (max-width: 819.98px) {
@@ -323,8 +319,8 @@ html.tone-light .nav-list a {color: var(--ink);}
 	  塗っている。粒が常にwashの上に描かれる為、粒が背景色で隠れてしまうのを防げる。
 	  ここでのbackground-imageは、キャンバスとの継ぎ目をなくす為のごく薄い残り香程度。
 	  色はTOPの動画のトーンに合わせたグラデーション(#acafb1→#c1c4c6を、視認性の為に
-	  かなり濃くした色。PC/SP共通ではっきり暗めにしている)。*/
-	background-image: linear-gradient(135deg, rgba(108,111,113,0.6), rgba(140,143,145,0.42));
+	  さらに濃くした色。SPでの可読性を優先し、PC/SP共通ではっきり暗めにしている)。*/
+	background-image: linear-gradient(135deg, rgba(80,83,85,0.68), rgba(112,115,117,0.5));
 	color: #fff;
 }
 
@@ -339,8 +335,6 @@ html.tone-light .nav-list a {color: var(--ink);}
 @media (max-width: 819.98px) {
 	.panel--photo {
 		background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3_sp.jpg');
-		/*iOSでbackground-attachment:fixedが不安定な事があるので、SP/タブレットではscrollにする*/
-		background-attachment: scroll;
 	}
 }
 .panel--photo .eyebrow, .panel--paper .eyebrow {color: rgba(255,255,255,0.7);}

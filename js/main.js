@@ -90,9 +90,6 @@ function updateOnScroll() {
 	var zone = zoneAtHeader();
 	root.classList.toggle("tone-light", zone.tone === "light");
 	updateCurrentNav(zone.id);
-	/*ナビ文字・粒は全セクション共通で白のままにする一方、ロゴだけは
-	  panel--paper(明るめグレー背景)の時に見やすいよう色を反転させる*/
-	root.classList.toggle("logo-invert", zone.wash);
 	if (window.saltField) {
 		window.saltField.setTone(zone.tone === "light" ? 1 : 0);
 		window.saltField.setMode(zone.motion);
