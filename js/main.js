@@ -7,6 +7,7 @@ var siteNav = document.getElementById("siteNav");
 var toTopBtn = document.getElementById("toTop");
 var toneZones = Array.prototype.slice.call(document.querySelectorAll(".hero, .panel"));
 var navItems = Array.prototype.slice.call(document.querySelectorAll(".nav-list li"));
+var photoFixedBg = document.querySelector(".photo-fixed-bg");
 var root = document.documentElement;
 
 
@@ -90,6 +91,9 @@ function updateOnScroll() {
 	var zone = zoneAtHeader();
 	root.classList.toggle("tone-light", zone.tone === "light");
 	updateCurrentNav(zone.id);
+	/*SP/タブレットでのService背景の疑似固定(iOS Safari対策)。
+	  Serviceが画面上部に来ている間だけ、position:fixedの背景divを表示する*/
+	if (photoFixedBg) photoFixedBg.classList.toggle("is-active", zone.id === "service");
 	if (window.saltField) {
 		window.saltField.setTone(zone.tone === "light" ? 1 : 0);
 		window.saltField.setMode(zone.motion);

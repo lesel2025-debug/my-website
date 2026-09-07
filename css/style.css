@@ -332,10 +332,23 @@ html.tone-light .nav-list a {color: var(--ink);}
 	background-attachment: fixed;
 	color: #fff;
 }
+/*PCではbackground-attachment:fixedがそのまま効くので使わない(非表示)。
+  SP/タブレットだけ、position:fixedの背景divをjs/main.jsで表示/非表示させ、
+  疑似的に固定背景を再現する(iOS Safari対策)*/
+.photo-fixed-bg {display: none;}
 @media (max-width: 819.98px) {
-	.panel--photo {
+	.panel--photo {background-image: none;background-attachment: scroll;}
+	.photo-fixed-bg {
+		display: block;
+		position: fixed;inset: 0;z-index: -1;
 		background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3_sp.jpg');
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: cover;
+		opacity: 0;
+		pointer-events: none;
 	}
+	.photo-fixed-bg.is-active {opacity: 1;}
 }
 .panel--photo .eyebrow, .panel--paper .eyebrow {color: rgba(255,255,255,0.7);}
 .panel--photo .lead, .panel--paper .lead {color: rgba(255,255,255,0.75);}

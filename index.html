@@ -91,6 +91,9 @@
 
 <!-- Service -->
 <section id="service" class="panel panel--photo" data-tone="dark">
+<!--iOS SafariはCSSのbackground-attachment:fixedに対応していない為、
+    SP/タブレットではこの専用divをjs/main.jsで表示切り替えして疑似的に固定背景を再現する-->
+<div class="photo-fixed-bg" aria-hidden="true"></div>
 <div class="panel-body">
 
 <div class="section-head">
