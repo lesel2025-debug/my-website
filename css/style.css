@@ -1,0 +1,568 @@
+@charset "utf-8";
+
+/* =============================================================
+   外部リソースの読み込み
+   ============================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Noto+Serif+JP:wght@200..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap');
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
+@import url(https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/css/lightbox.css);
+
+
+/* =============================================================
+   デザイントークン(白×ニュアンスグレーのモノトーン)
+   ============================================================= */
+:root {
+	--paper: #f4f2ee;
+	--ink: #2f2c27;
+	--ink-soft: #726c62;
+	--near-black: #322f29;
+	--line: rgba(56,53,47,0.2);
+	--gutter: clamp(20px, 5vw, 88px);	/*左右の余白。gliq.co.jpの全幅レイアウトを参考に*/
+	--topbar-space: 108px;				/*上部に固定表示するヘッダー分の避け幅*/
+	--measure: 38em;
+
+	--sans: "Zen Kaku Gothic New", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+	--serif: "Shippori Mincho", "Noto Serif JP", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", serif;
+}
+
+
+/* =============================================================
+   リセット & 基本設定(読みやすさを重視し、余白広め・行間広めに)
+   ============================================================= */
+*,*::before,*::after {box-sizing: border-box;}
+html,body {height: 100%;}
+html {font-size: 16px;}
+
+body {
+	margin: 0;
+	font-family: var(--sans);
+	font-weight: 300;
+	letter-spacing: 0.04em;
+	line-height: 1.9;
+	background: var(--paper);
+	color: var(--ink);
+	-webkit-text-size-adjust: none;
+}
+body.nav-locked {overflow: hidden;height: 100%;}
+
+img {max-width: 100%;height: auto;vertical-align: middle;border: 0;}
+ul,ol {list-style: none;margin: 0;padding: 0;}
+h1,h2,h3 {font-weight: 400;margin: 0;}
+p {margin: 0 0 1.4em;}
+a {color: inherit;text-decoration: none;transition: 0.3s;}
+button {font: inherit;}
+em {font-style: normal;}
+
+#saltCanvas {
+	position: fixed;inset: 0;
+	width: 100%;height: 100%;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.skip-link {
+	position: absolute;left: -999px;top: 0;z-index: 999;
+	background: var(--near-black);color: #fff;
+	padding: 0.6rem 1rem;
+}
+.skip-link:focus {left: 0;}
+
+
+/* =============================================================
+   見出し・本文の共通タイポグラフィ(gliq.co.jpを参考に、大きめ・広めの余白で)
+   ============================================================= */
+.eyebrow {
+	margin: 0 0 1.2rem;
+	font-family: var(--sans);
+	font-size: 0.75rem;
+	letter-spacing: 0.24em;
+	color: var(--ink-soft);
+	opacity: 0.85;
+}
+
+.display {
+	margin: 0 0 2rem;
+	font-family: var(--serif);
+	font-size: clamp(1.7rem, 1.15rem + 2.6vw, 3rem);
+	line-height: 1.55;
+	font-weight: 500;
+	letter-spacing: 0.02em;
+}
+.display em {
+	display: inline-block;
+	font-weight: 400;
+	color: var(--ink-soft);
+}
+
+.lead {
+	max-width: var(--measure);
+	margin: 0 0 2.5rem;
+	font-size: 1.05rem;
+	line-height: 2;
+	letter-spacing: 0.03em;
+	color: var(--ink-soft);
+}
+
+.prose {
+	max-width: var(--measure);
+	margin-bottom: 3rem;
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.prose.is-in {opacity: 1;transform: none;}
+.prose h3 {
+	margin-bottom: 1rem;
+	font-size: 1.3rem;
+	font-family: var(--serif);
+	font-weight: 500;
+}
+.prose p {font-size: 0.98rem;line-height: 2;letter-spacing: 0.03em;}
+.prose-note {color: rgba(255,255,255,0.75);}
+
+.will-reveal {opacity: 0;transform: translateY(14px);transition: opacity 0.8s ease, transform 0.8s ease;}
+.will-reveal.is-in {opacity: 1;transform: none;}
+
+
+/* =============================================================
+   ヘッダー / ナビゲーション
+   gliq.co.jpの様に、幅を持ったサイドバーではなく、画面上部に
+   ロゴ(左上)とナビ(右上)を小さく配置するだけのスリムな構成に。
+   ============================================================= */
+.site-header {
+	position: fixed;top: 0;left: 0;right: 0;z-index: 30;	/*塩の粒キャンバス(z-index:1)より必ず手前に*/
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: clamp(16px, 3vw, 28px) var(--gutter) 0;
+	pointer-events: none;	/*余白部分はクリックを透過し、下の粒に触れられるように*/
+}
+.site-header > * {pointer-events: auto;}
+
+.brand {display: inline-flex;}
+.brand-mark {
+	display: inline-flex;align-items: center;justify-content: center;
+	padding: 10px 12px 8px;
+}
+.brand-mark img {display: block;width: 40px;height: auto;transition: filter 0.4s;}
+@media (min-width: 820px) {
+	.brand-mark img {width: 80px;}
+	.brand-mark {padding: 6px 12px 4px;}
+	:root {--topbar-space: 160px;}	/*ロゴが大きくなった分、コンテンツの避け幅も広げる*/
+}
+/*背景を外したので、ロゴ(白×グレー)がそのままだと明るいセクションで見えにくくなる。
+  ナビと同じ仕組みで、背景の明暗(html.tone-light)に合わせて自動で色を反転させる。
+  v2はナビ文字・粒は全セクション共通で白のままにしたい為、ロゴだけは別の合図
+  (html.logo-invert。panel--paperの明るめグレー背景の時だけON)で切り替える*/
+html.tone-light .brand-mark img,
+html.logo-invert .brand-mark img {filter: invert(1);}
+
+.nav-toggle {
+	position: fixed;z-index: 120;
+	top: clamp(16px, 3vw, 26px);right: var(--gutter);
+	width: 42px;height: 42px;
+	padding: 14px 12px;
+	display: flex;flex-direction: column;justify-content: space-between;
+	background: var(--near-black);
+	border: 0;cursor: pointer;
+}
+@media (min-width: 820px) {.nav-toggle {display: none;}}
+
+.nav-toggle span {
+	display: block;height: 0;
+	border-top: 1.5px solid #fff;
+	transition: 0.3s;
+}
+.nav-toggle.is-active span:nth-child(1) {transform: translateY(6px) rotate(45deg);}
+.nav-toggle.is-active span:nth-child(2) {opacity: 0;}
+.nav-toggle.is-active span:nth-child(3) {transform: translateY(-6px) rotate(-45deg);}
+
+@media (max-width: 819.98px) {
+	.site-nav {
+		position: fixed;inset: 0;z-index: 110;
+		display: flex;flex-direction: column;justify-content: center;
+		padding: 100px 2.5rem 2rem;
+		background: rgba(15,14,12,0.92);
+		opacity: 0;visibility: hidden;
+		transform: translateX(-16px);
+		transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s 0.25s;
+		overflow-y: auto;
+	}
+	.site-nav.is-open {
+		opacity: 1;visibility: visible;transform: translateX(0);
+		transition: opacity 0.25s ease, transform 0.25s ease;
+	}
+}
+
+.nav-list {
+	display: flex;flex-direction: column;align-items: flex-end;gap: 0.55rem;
+	font-family: var(--sans);font-size: 0.72rem;font-weight: 500;
+	letter-spacing: 0.1em;text-transform: uppercase;
+}
+.nav-list a {
+	display: block;padding: 0.2rem 0;
+	color: #fff;
+	transition: opacity 0.3s, color 0.3s;
+}
+.nav-list a:hover {opacity: 0.6;}
+/*今いるセクションのメニュー項目の右に「・」を付ける(gliq.co.jpを参考)*/
+.nav-list li.is-current > a::after {content: "\30fb";margin-left: 0.4em;}
+/*背景を付けずに常に読める文字色にするため、下にある背景の明暗(html.tone-light)に合わせて
+  ロゴと同様に自動で色を切り替える*/
+html.tone-light .nav-list a {color: var(--ink);}
+
+@media (max-width: 819.98px) {
+	.nav-list {align-items: flex-start;font-size: 1.05rem;gap: 1rem;margin-bottom: 2.5rem;}
+	.nav-list a {padding: 0.2rem 0;color: #fff;}
+}
+
+.social-list {display: flex;justify-content: flex-end;gap: 8px;margin-top: 0.8rem;}
+@media (max-width: 819.98px) {.social-list {justify-content: flex-start;}}
+.social-list a {
+	display: flex;align-items: center;justify-content: center;
+	width: 28px;height: 28px;
+	border-radius: 50%;
+	background: var(--near-black);
+	color: #fff;font-size: 12px;
+}
+
+
+/* =============================================================
+   ヒーロー(動画背景。塩の粒はさらに上のレイヤーで舞う)
+   ============================================================= */
+.hero {
+	position: relative;z-index: 0;overflow: hidden;
+	width: 100%;height: 100%;
+}
+/*position:fixedのままだと動画がページの一番奥に永久に残り、スクロール後の
+  他セクションで薄く透けて見えてしまう為、.hero(overflow:hidden)の中だけに
+  留まるposition:absoluteにしている*/
+.hero-video {
+	position: absolute;top: 50%;left: 50%;z-index: -1;
+	min-width: 100%;min-height: 100%;
+	transform: translate(-50%,-50%);
+}
+.hero-video.is-sp {display: none;}
+@media (max-width: 819.98px) {
+	.hero-video.is-pc {display: none;}
+	.hero-video.is-sp {display: block;}
+}
+.hero-veil {
+	position: absolute;inset: 0;z-index: -1;
+	background: linear-gradient(180deg, rgba(50,47,41,0.35) 0%, rgba(50,47,41,0.12) 40%, rgba(50,47,41,0.45) 100%);
+}
+
+/*左下の縦書き「SCROLL DOWN」ラベル(gliq.co.jpのディテールを参考に)*/
+.hero-scrolldown {
+	position: absolute;z-index: 2;
+	left: var(--gutter);bottom: 2rem;
+	writing-mode: vertical-rl;
+	font-size: 0.68rem;
+	letter-spacing: 0.3em;
+	color: rgba(255,255,255,0.7);
+	animation: fade-up 1s 0.5s both;
+}
+.hero-scrolldown::after {
+	content: "";
+	display: block;
+	width: 1px;height: 34px;
+	margin: 0.6em auto 0;
+	background: rgba(255,255,255,0.5);
+}
+
+.hero-down {
+	position: absolute;z-index: 2;
+	right: var(--gutter);bottom: 2rem;
+	width: 26px;height: 26px;
+	animation: fade-up 1s 0.5s both;
+}
+.hero-down span {
+	position: absolute;inset: 0;
+	border-right: 2px solid rgba(255,255,255,0.85);
+	border-bottom: 2px solid rgba(255,255,255,0.85);
+	transform: rotate(45deg);
+	animation: bounce-cue 1.6s ease-in-out infinite;
+}
+@keyframes bounce-cue {
+	0%,100% {opacity: 0.3;transform: rotate(45deg) translate(0,0);}
+	50% {opacity: 1;transform: rotate(45deg) translate(6px,6px);}
+}
+@keyframes fade-up {from {opacity: 0;} to {opacity: 1;}}
+
+
+/* =============================================================
+   パネル共通(About/Service/Gallery/Contact)
+   gliq.co.jpの様に、角丸カードではなく画面幅いっぱいのブロックを
+   隙間なく積み重ねる構成。塩の粒キャンバス(z-index:1)の上に、
+   各パネルを半透明〜不透明で重ねている。
+   ============================================================= */
+.panel {
+	position: relative;z-index: 2;
+	min-height: 100dvh;
+	padding: calc(var(--topbar-space) + 2rem) var(--gutter) 4rem;
+}
+.panel-body {
+	position: relative;z-index: 1;
+	max-width: 1180px;
+	margin: 0 auto;
+}
+
+.section-head {
+	margin-bottom: 3rem;
+	padding-bottom: 2rem;
+	border-bottom: 1px solid var(--line);
+}
+.panel--photo .section-head, .panel--paper .section-head {border-bottom-color: rgba(255,255,255,0.2);}
+.section-head .display {margin-bottom: 0;}
+
+/*About/Gallery/Contact共通。色で区別せず、塩の粒の動き方(data-motion)で場面転換を表現する為、
+  背景色はニュアンスグレーで統一している。(元は白背景+グレーの粒だったが、
+  グレー背景+白い粒+白文字に反転している)*/
+.panel--paper {
+	/*背景の濃い色は、このレイヤーではなく#saltCanvas側(js/salt.jsのwash)で
+	  塗っている。粒が常にwashの上に描かれる為、粒が背景色で隠れてしまうのを防げる。
+	  ここでのbackground-imageは、キャンバスとの継ぎ目をなくす為のごく薄い残り香程度。
+	  色はTOPの動画のトーンに合わせたグラデーション(#acafb1→#c1c4c6を、視認性の為に
+	  少し濃くした色)。*/
+	background-image: linear-gradient(135deg, rgba(140,143,145,0.5), rgba(170,173,175,0.32));
+	color: #fff;
+}
+
+.panel--photo {
+	background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3.jpg');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
+	color: #fff;
+}
+.panel--photo .eyebrow, .panel--paper .eyebrow {color: rgba(255,255,255,0.7);}
+.panel--photo .lead, .panel--paper .lead {color: rgba(255,255,255,0.75);}
+.panel--photo .display em, .panel--paper .display em {color: rgba(255,255,255,0.7);}
+
+
+/* =============================================================
+   Serviceの一覧(gliqの「01/02...」の数字見出しを参考に)
+   ============================================================= */
+.service-list {margin-top: 1rem;}
+.service-item {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 1.5rem;
+	align-items: baseline;
+	padding: 1.8rem 0;
+	border-top: 1px solid rgba(255,255,255,0.18);
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.service-item.is-in {opacity: 1;transform: none;}
+.service-item:last-child {border-bottom: 1px solid rgba(255,255,255,0.18);}
+
+.service-num {
+	font-family: var(--serif);
+	font-size: 1.6rem;
+	color: rgba(255,255,255,0.5);
+}
+.service-text h3 {
+	margin-bottom: 0.5rem;
+	font-size: 1.05rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+}
+.service-text p {
+	margin: 0;
+	font-size: 0.92rem;
+	line-height: 1.9;
+	color: rgba(255,255,255,0.78);
+}
+
+
+/* =============================================================
+   Galleryの一覧
+   ============================================================= */
+.gallery-group-label {
+	margin: 2.5rem 0 0.8rem;
+	font-family: var(--serif);
+	font-size: 0.78rem;
+	letter-spacing: 0.28em;
+	color: rgba(255,255,255,0.6);
+}
+.gallery-group-label:first-of-type {margin-top: 0;}
+
+.movie-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 220px));
+	gap: 1rem;
+	margin-top: 1rem;
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.movie-grid.is-in {opacity: 1;transform: none;}
+.movie-grid li {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 9 / 16;
+	border-radius: 6px;
+	background: rgba(0,0,0,0.2);
+}
+.movie-grid video {
+	display: block;
+	width: 100%;height: 100%;
+	object-fit: cover;
+}
+
+.work-grid {
+	display: grid;
+	grid-template-columns: repeat(2,1fr);
+	gap: 1rem;
+	margin-top: 1rem;
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.work-grid.is-in {opacity: 1;transform: none;}
+@media (min-width: 600px) {
+	.work-grid {grid-template-columns: repeat(4,1fr);}
+}
+.work-grid li {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 1 / 1;
+	border-radius: 6px;
+}
+.work-grid a {display: block;width: 100%;height: 100%;}
+.work-grid img {
+	width: 100%;height: 100%;
+	object-fit: cover;object-position: center;
+	transition: 0.5s;
+}
+.work-grid img:hover {transform: scale(1.08);filter: contrast(1.1);}
+
+
+/* =============================================================
+   お問い合わせフォーム(下線スタイルで、すっきり読みやすく)
+   ============================================================= */
+.inquiry-form {
+	max-width: 34em;
+	margin-top: 1rem;
+	display: grid;
+	gap: 1.8rem;
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.inquiry-form.is-in {opacity: 1;transform: none;}
+
+.field label {
+	display: block;
+	margin-bottom: 0.6rem;
+	font-family: var(--serif);
+	font-size: 0.85rem;
+	letter-spacing: 0.1em;
+}
+.field-required {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 0.1rem 0.5rem;
+	font-family: var(--sans);
+	font-size: 0.65rem;
+	letter-spacing: 0.05rem;
+	vertical-align: middle;
+	color: #fff;
+	background: var(--near-black);
+	border-radius: 3px;
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	padding: 0.6rem 0.2rem;
+	font: inherit;
+	font-size: 1rem;
+	letter-spacing: 0.03em;
+	color: #fff;
+	background: transparent;
+	border: 0;
+	border-bottom: 1px solid rgba(255,255,255,0.35);
+	border-radius: 0;
+}
+.field textarea {resize: vertical;line-height: 1.8;}
+.field select {color-scheme: dark;}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+	outline: none;
+	border-bottom-color: #fff;
+}
+
+.field-note {margin: -0.6rem 0 0;font-size: 0.78rem;color: rgba(255,255,255,0.75);}
+
+.field-submit {
+	position: relative;
+	justify-self: start;
+	overflow: hidden;
+	padding: 1rem 2.6rem;
+	font-size: 0.9rem;
+	letter-spacing: 0.2em;
+	color: #fff;
+	background: transparent;
+	border: 1px solid rgba(255,255,255,0.7);
+	border-radius: 999px;
+	cursor: pointer;
+	transition: color 0.35s ease;
+}
+.field-submit span {position: relative;z-index: 1;}
+.field-submit::before {
+	content: "";
+	position: absolute;inset: -1px;
+	border-radius: 999px;
+	background: #fff;
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+}
+.field-submit:hover {color: var(--near-black);}
+.field-submit:hover::before {transform: scaleX(1);transform-origin: left;}
+
+.inquiry-done {
+	max-width: 34em;
+	margin-top: 1.5rem;
+	padding: 2rem;
+	text-align: center;
+	border: 1px solid rgba(255,255,255,0.3);
+	border-radius: 12px;
+	animation: fade-up 0.5s both;
+}
+
+
+/* =============================================================
+   フッター / トップへ戻るボタン
+   ============================================================= */
+.site-footer {
+	position: relative;z-index: 2;
+	padding: 2rem 5vw 1.5rem;
+	text-align: center;
+	font-size: 0.8rem;
+	color: var(--ink-soft);
+}
+.site-footer a {text-decoration: underline;}
+
+.to-top {
+	position: fixed;z-index: 90;
+	right: 20px;bottom: 20px;
+	width: 56px;height: 56px;
+	border: 0;border-radius: 50%;
+	background: rgba(50,47,41,0.7);
+	color: #fff;font-size: 1.2rem;
+	cursor: pointer;
+	opacity: 0;visibility: hidden;
+	transform: translateY(8px);
+	transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
+}
+.to-top.is-visible {
+	opacity: 1;visibility: visible;transform: translateY(0);
+	transition: opacity 0.3s, transform 0.3s;
+}
