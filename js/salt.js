@@ -427,8 +427,8 @@ SaltField.prototype.draw = function (t) {
 			ctx.fillRect(0, 0, this.w, this.h);
 		} else {
 			var washGrad = ctx.createLinearGradient(0, 0, this.w, this.h);
-			washGrad.addColorStop(0, "rgba(140,143,145," + (0.86 * this.wash) + ")");
-			washGrad.addColorStop(1, "rgba(170,173,175," + (0.72 * this.wash) + ")");
+			washGrad.addColorStop(0, "rgba(108,111,113," + (0.92 * this.wash) + ")");
+			washGrad.addColorStop(1, "rgba(140,143,145," + (0.8 * this.wash) + ")");
 			ctx.fillStyle = washGrad;
 			ctx.fillRect(0, 0, this.w, this.h);
 		}

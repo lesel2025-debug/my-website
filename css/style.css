@@ -323,8 +323,8 @@ html.tone-light .nav-list a {color: var(--ink);}
 	  塗っている。粒が常にwashの上に描かれる為、粒が背景色で隠れてしまうのを防げる。
 	  ここでのbackground-imageは、キャンバスとの継ぎ目をなくす為のごく薄い残り香程度。
 	  色はTOPの動画のトーンに合わせたグラデーション(#acafb1→#c1c4c6を、視認性の為に
-	  少し濃くした色)。*/
-	background-image: linear-gradient(135deg, rgba(140,143,145,0.5), rgba(170,173,175,0.32));
+	  かなり濃くした色。PC/SP共通ではっきり暗めにしている)。*/
+	background-image: linear-gradient(135deg, rgba(108,111,113,0.6), rgba(140,143,145,0.42));
 	color: #fff;
 }
 
@@ -335,6 +335,13 @@ html.tone-light .nav-list a {color: var(--ink);}
 	background-size: cover;
 	background-attachment: fixed;
 	color: #fff;
+}
+@media (max-width: 819.98px) {
+	.panel--photo {
+		background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3_sp.jpg');
+		/*iOSでbackground-attachment:fixedが不安定な事があるので、SP/タブレットではscrollにする*/
+		background-attachment: scroll;
+	}
 }
 .panel--photo .eyebrow, .panel--paper .eyebrow {color: rgba(255,255,255,0.7);}
 .panel--photo .lead, .panel--paper .lead {color: rgba(255,255,255,0.75);}
