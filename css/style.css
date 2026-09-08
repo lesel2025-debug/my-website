@@ -336,7 +336,7 @@ html.tone-light .nav-list a {color: var(--ink);}
 }
 
 .panel--photo {
-	background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3.jpg');
+	background-image: linear-gradient(rgba(46,48,49,0.68), rgba(46,48,49,0.68)), url('../images/section3.jpg');
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: cover;
@@ -356,7 +356,7 @@ html.tone-light .nav-list a {color: var(--ink);}
 	.photo-fixed-bg {
 		display: block;
 		position: fixed;inset: 0;z-index: -1;
-		background-image: linear-gradient(rgba(48,45,40,0.68), rgba(48,45,40,0.68)), url('../images/section3_sp.jpg');
+		background-image: linear-gradient(rgba(46,48,49,0.68), rgba(46,48,49,0.68)), url('../images/section3_sp.jpg');
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size: cover;
