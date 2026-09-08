@@ -85,12 +85,19 @@ function zoneAtHeader() {
 	return {tone: tone, motion: motion, wash: wash, id: id};
 }
 
+/*iOS Safariはアドレスバーの出し引きでツールバーの高さが変わり、window.innerHeightは
+  その変化に追従しない事がある(常に一番小さい表示エリアを基準にした値のままになりがち)。
+  window.visualViewportがあればそちらを使う事で、実際に今見えている高さとズレない様にする*/
+function getViewportHeight() {
+	return (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+}
+
 /*背景(粒の下地=wash・粒の色=tone)は、セクションの区切り線で急に切り替えるのではなく、
   「今画面に見えている各セクションの割合」に応じて連続的に混ぜる事で、
   スクロールに合わせてなめらかに背景が変わっていく様にする*/
 function computeContinuousBackground() {
 	var viewTop = window.scrollY;
-	var viewH = window.innerHeight;
+	var viewH = getViewportHeight();
 	var viewBottom = viewTop + viewH;
 	var wash = 0, tone = 0;
 
@@ -132,7 +139,7 @@ function updateOnScroll() {
 	  それと同じ見た目になるよう、Serviceの箱が画面と重なっている部分だけを
 	  clip-pathで正確に切り取って見せる*/
 	if (photoFixedBg && serviceEl) {
-		var viewTop = window.scrollY, viewH = window.innerHeight, viewBottom = viewTop + viewH;
+		var viewTop = window.scrollY, viewH = getViewportHeight(), viewBottom = viewTop + viewH;
 		var sTop = serviceEl.offsetTop, sBottom = sTop + serviceEl.offsetHeight;
 		var clipTop = Math.max(0, sTop - viewTop);
 		var clipBottom = Math.max(0, viewBottom - sBottom);
@@ -153,12 +160,19 @@ function updateOnScroll() {
 	ticking = false;
 }
 
-window.addEventListener("scroll", function () {
+function requestScrollUpdate() {
 	if (!ticking) {
 		window.requestAnimationFrame(updateOnScroll);
 		ticking = true;
 	}
-}, {passive: true});
+}
+
+window.addEventListener("scroll", requestScrollUpdate, {passive: true});
+/*iOS Safariでアドレスバーの出し引きが起きた時(scrollイベントを伴わない事がある)にも、
+  Serviceの背景の切り取り位置を再計算する*/
+if (window.visualViewport) {
+	window.visualViewport.addEventListener("resize", requestScrollUpdate);
+}
 
 window.addEventListener("load", updateOnScroll);
 updateOnScroll();
