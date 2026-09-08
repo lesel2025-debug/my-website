@@ -31,7 +31,7 @@
    ============================================================= */
 *,*::before,*::after {box-sizing: border-box;}
 html,body {height: 100%;}
-html {font-size: 16px;}
+html {font-size: 16px;scroll-behavior: smooth;}
 
 body {
 	margin: 0;
@@ -111,7 +111,7 @@ em {font-style: normal;}
 	transition: opacity 0.8s ease, transform 0.8s ease;
 }
 .prose.is-in {opacity: 1;transform: none;}
-.prose h3 {
+.prose h3:not(.display) {
 	margin-bottom: 1rem;
 	font-size: 1.3rem;
 	font-family: var(--serif);
@@ -119,6 +119,8 @@ em {font-style: normal;}
 }
 .prose p {font-size: 0.98rem;line-height: 2;letter-spacing: 0.03em;}
 .prose-note {color: #fff;}
+.prose-note a {text-decoration: underline;}
+.prose-note a:hover {opacity: 0.7;}
 
 .will-reveal {opacity: 0;transform: translateY(14px);transition: opacity 0.8s ease, transform 0.8s ease;}
 .will-reveal.is-in {opacity: 1;transform: none;}
@@ -572,7 +574,11 @@ html.tone-light .nav-list a {color: var(--ink);}
 	padding: 2rem 5vw 1.5rem;
 	text-align: center;
 	font-size: 0.8rem;
-	color: var(--ink-soft);
+	/*ページ最下部は塩の粒キャンバスの背景(wash)が薄くなり、地の紙色(--paper)が
+	  透けてほぼ白に近くなる為、白文字がそのままでは読めなくなってしまう。
+	  フッターだけ背景色を敷いて、常に読める様にしている*/
+	background: var(--near-black);
+	color: #fff;
 }
 .site-footer a {text-decoration: underline;}
 
