@@ -182,8 +182,16 @@ SaltField.prototype.buildShapePoints = function () {
 	this.shapeCursor = 0;
 };
 
-/*粒を現在のthis.modeに応じて初期化する(モードが切り替わった時、既存の粒にも反映する為)*/
+/*粒を現在のthis.modeに応じて初期化する(モードが切り替わった時、既存の粒にも反映する為)。
+  今いる位置(または生まれた位置)を出発点として覚えておき、新しい形へ一気に
+  ワープするのではなく、update()側でなめらかに移動させる(モーフィング)*/
 SaltField.prototype.initGrainForMode = function (g) {
+	var isNew = (g.modeVersion === -1);
+	g.morphFromX = (g.x !== undefined) ? g.x : this.w * 0.5;
+	g.morphFromY = (g.y !== undefined) ? g.y : this.h * 0.5;
+	g.morphT = 0;
+	g.morphDuration = 0.6;
+
 	if (this.shapePoints) {
 		g.shapeIdx = this.shapeCursor % this.shapePoints.length;
 		this.shapeCursor++;
@@ -208,6 +216,14 @@ SaltField.prototype.initGrainForMode = function (g) {
 		g.depthScale = 1;
 		g.depthZ = 0;
 	}
+
+	/*粒数が増えて新しく生まれた粒は、位置の移動だけでなくフェードインもさせる事で
+	  唐突に出現した感じを無くす*/
+	if (isNew) {
+		g.morphAlphaTarget = g.alpha;
+		g.alpha = 0;
+	}
+
 	g.modeVersion = this.modeVersion;
 };
 
@@ -363,9 +379,10 @@ SaltField.prototype.setTone = function (tone) {
 };
 
 /*パネル自体の背景色を薄くする代わりに、キャンバスの粒より下の層に同系色を
-  塗っておくかどうか。onの間はdraw()内で粒を描く前にfillRectする*/
-SaltField.prototype.setWash = function (on) {
-	this.washTarget = on ? 1 : 0;
+  塗っておくかどうか。draw()内で粒を描く前にこの濃さでfillRectする。
+  0〜1の連続値(スクロールに応じた混ざり具合)をそのまま受け取る*/
+SaltField.prototype.setWash = function (amount) {
+	this.washTarget = amount;
 };
 
 /*塩の動き方を切り替える。値が変わった時だけ、図形を作り直し、既存の粒に
@@ -389,6 +406,19 @@ SaltField.prototype.update = function (dt, t) {
 			if (this.mode === "fall") continue;	/*自動で降る粒はTOPでは持たない*/
 			if (g.modeVersion !== this.modeVersion) this.initGrainForMode(g);
 			this.stepAmbientGrain(g, dt, t);
+
+			/*形が切り替わった直後は、今の(移動先の)位置へワープさせず、
+			  切り替わる前にいた場所からなめらかに移動して形を作る*/
+			if (g.morphT !== undefined && g.morphT < 1) {
+				g.morphT = Math.min(1, g.morphT + dt / g.morphDuration);
+				var ease = 1 - Math.pow(1 - g.morphT, 3);	/*ease-out: 後半ゆっくり収まる*/
+				g.x = g.morphFromX + (g.x - g.morphFromX) * ease;
+				g.y = g.morphFromY + (g.y - g.morphFromY) * ease;
+				if (g.morphAlphaTarget !== undefined) {
+					g.alpha = g.morphAlphaTarget * ease;
+					if (g.morphT >= 1) delete g.morphAlphaTarget;
+				}
+			}
 		} else {
 			g.y += g.vy * dt;
 			g.sway += g.swaySpeed * dt;

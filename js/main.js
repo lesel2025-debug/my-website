@@ -8,6 +8,7 @@ var toTopBtn = document.getElementById("toTop");
 var toneZones = Array.prototype.slice.call(document.querySelectorAll(".hero, .panel"));
 var navItems = Array.prototype.slice.call(document.querySelectorAll(".nav-list li"));
 var photoFixedBg = document.querySelector(".photo-fixed-bg");
+var serviceEl = document.getElementById("service");
 var root = document.documentElement;
 
 
@@ -56,10 +57,16 @@ if (navToggle && siteNav) {
 var ticking = false;
 
 /*今、画面上部(ヘッダー付近)に来ているセクションを調べ、その
-  data-tone(背景の明暗)とdata-motion(塩の動き方)を返す*/
+  data-tone(背景の明暗)とdata-motion(塩の動き方)を返す。
+  ナビの現在地(id)はヘッダー付近の早めの切り替わりでOKだが、塩の形(motion)は
+  形自体が一気に変わる(粒の数も変わる)大きな見た目の変化なので、そこだけ
+  画面の真ん中を基準にする事で、実際にコンテンツが視界の中心に来たタイミングに
+  近づけている(例:Gallery→Contactで、輪の形がヘッダー付近だけで早く切り替わって
+  不自然に見えていたのを解消)*/
 function zoneAtHeader() {
 	var headerH = header ? header.offsetHeight : 80;
 	var probeY = window.scrollY + headerH * 0.5 + 30;
+	var motionProbeY = window.scrollY + window.innerHeight * 0.5;
 	var tone = "dark", motion = "fall", wash = false, id = "top";
 
 	for (var i = 0; i < toneZones.length; i++) {
@@ -68,12 +75,38 @@ function zoneAtHeader() {
 		var bottom = top + el.offsetHeight;
 		if (probeY >= top && probeY < bottom) {
 			tone = el.getAttribute("data-tone") || "dark";
-			motion = el.getAttribute("data-motion") || "fall";
 			wash = el.classList.contains("panel--paper");
 			id = el.id;
 		}
+		if (motionProbeY >= top && motionProbeY < bottom) {
+			motion = el.getAttribute("data-motion") || "fall";
+		}
 	}
 	return {tone: tone, motion: motion, wash: wash, id: id};
+}
+
+/*背景(粒の下地=wash・粒の色=tone)は、セクションの区切り線で急に切り替えるのではなく、
+  「今画面に見えている各セクションの割合」に応じて連続的に混ぜる事で、
+  スクロールに合わせてなめらかに背景が変わっていく様にする*/
+function computeContinuousBackground() {
+	var viewTop = window.scrollY;
+	var viewH = window.innerHeight;
+	var viewBottom = viewTop + viewH;
+	var wash = 0, tone = 0;
+
+	for (var i = 0; i < toneZones.length; i++) {
+		var el = toneZones[i];
+		var top = el.offsetTop;
+		var bottom = top + el.offsetHeight;
+		var overlap = Math.min(viewBottom, bottom) - Math.max(viewTop, top);
+		if (overlap <= 0) continue;
+		var frac = overlap / viewH;
+		var isWash = el.classList.contains("panel--paper") ? 1 : 0;
+		var isLight = (el.getAttribute("data-tone") === "light") ? 1 : 0;
+		wash += isWash * frac;
+		tone += isLight * frac;
+	}
+	return {wash: wash, tone: tone};
 }
 
 /*今いるセクションのメニュー項目の右に「・」を付ける(gliq.co.jpを参考)*/
@@ -89,15 +122,30 @@ function updateOnScroll() {
 	var scrollY = window.scrollY;
 
 	var zone = zoneAtHeader();
+	var bg = computeContinuousBackground();
 	root.classList.toggle("tone-light", zone.tone === "light");
 	updateCurrentNav(zone.id);
 	/*SP/タブレットでのService背景の疑似固定(iOS Safari対策)。
-	  Serviceが画面上部に来ている間だけ、position:fixedの背景divを表示する*/
-	if (photoFixedBg) photoFixedBg.classList.toggle("is-active", zone.id === "service");
+	  不透明度を0/1で切り替えるだけだと、画面全体が一様にフェードしてしまい、
+	  実際にServiceの内容が画面のどこまで見えているかとズレて見える。
+	  PCのbackground-attachment:fixedは要素の範囲でそのまま切り取られる為、
+	  それと同じ見た目になるよう、Serviceの箱が画面と重なっている部分だけを
+	  clip-pathで正確に切り取って見せる*/
+	if (photoFixedBg && serviceEl) {
+		var viewTop = window.scrollY, viewH = window.innerHeight, viewBottom = viewTop + viewH;
+		var sTop = serviceEl.offsetTop, sBottom = sTop + serviceEl.offsetHeight;
+		var clipTop = Math.max(0, sTop - viewTop);
+		var clipBottom = Math.max(0, viewBottom - sBottom);
+		if (clipTop + clipBottom >= viewH) {
+			photoFixedBg.style.clipPath = "inset(0 0 100% 0)";
+		} else {
+			photoFixedBg.style.clipPath = "inset(" + clipTop + "px 0 " + clipBottom + "px 0)";
+		}
+	}
 	if (window.saltField) {
-		window.saltField.setTone(zone.tone === "light" ? 1 : 0);
+		window.saltField.setTone(bg.tone);
 		window.saltField.setMode(zone.motion);
-		window.saltField.setWash(zone.wash);
+		window.saltField.setWash(bg.wash);
 	}
 
 	if (toTopBtn) toTopBtn.classList.toggle("is-visible", scrollY > 300);
