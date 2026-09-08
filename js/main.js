@@ -210,13 +210,16 @@ if (toTopBtn) {
 
 //===============================================================
 // お問い合わせフォーム
-// ※現在は送信先未設定の仮実装です。Formspree/Netlify Forms等、
-//   送信先サービスが決まり次第、実送信処理に差し替えてください。
+// FormSubmit(https://formsubmit.co/)のAJAXエンドポイントに送信し、
+// ページ遷移せずにそのまま「送信完了」表示に切り替える
 //===============================================================
 var inquiryForm = document.getElementById("inquiryForm");
 var inquiryDone = document.getElementById("inquiryDone");
+var inquiryError = document.getElementById("inquiryError");
 
 if (inquiryForm) {
+	var submitBtn = inquiryForm.querySelector(".field-submit");
+
 	inquiryForm.addEventListener("submit", function (e) {
 		e.preventDefault();
 
@@ -225,8 +228,26 @@ if (inquiryForm) {
 			return;
 		}
 
-		inquiryForm.hidden = true;
-		if (inquiryDone) inquiryDone.hidden = false;
+		if (inquiryError) inquiryError.hidden = true;
+		if (submitBtn) submitBtn.disabled = true;
+
+		var ajaxAction = inquiryForm.action.replace(
+			"formsubmit.co/",
+			"formsubmit.co/ajax/"
+		);
+
+		fetch(ajaxAction, {
+			method: "POST",
+			headers: {"Accept": "application/json"},
+			body: new FormData(inquiryForm)
+		}).then(function (res) {
+			if (!res.ok) throw new Error("send failed");
+			inquiryForm.hidden = true;
+			if (inquiryDone) inquiryDone.hidden = false;
+		}).catch(function () {
+			if (submitBtn) submitBtn.disabled = false;
+			if (inquiryError) inquiryError.hidden = false;
+		});
 	});
 }
 

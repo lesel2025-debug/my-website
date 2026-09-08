@@ -190,8 +190,13 @@
 <p class="lead">ご相談・お見積りは無料です。下記フォームよりお気軽にご連絡ください。<br>
 通常2〜3営業日以内にご返信いたします。</p>
 
-<!--フォームの送信先は仮実装です。Formspree等のフォームサービスやNetlify Forms等、送信先が決まり次第action属性とjs/main.jsの送信処理を差し替えてください。-->
-<form id="inquiryForm" class="inquiry-form" action="#" method="post" novalidate>
+<!--FormSubmit(https://formsubmit.co/)経由でcontact@sioful.comへ送信。
+    アカウント登録不要のフォーム中継サービス。初回送信時のみ、届いたメール内の
+    確認リンクをクリックして送信先アドレスを有効化する必要がある-->
+<form id="inquiryForm" class="inquiry-form" action="https://formsubmit.co/contact@sioful.com" method="post" novalidate>
+<input type="hidden" name="_subject" value="【SiOFUL DESIGN】お問い合わせがありました">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" name="_captcha" value="false">
 
 <div class="field">
 <label for="cf-name">お名前<span class="field-required">必須</span></label>
@@ -221,6 +226,8 @@
 </div>
 
 <p class="field-note">ご入力いただいた情報は、お問い合わせへの対応以外の目的では使用いたしません。</p>
+
+<p id="inquiryError" class="field-note" hidden>送信に失敗しました。お手数ですが時間をおいて再度お試しください。</p>
 
 <button type="submit" class="field-submit"><span>送信する</span></button>
 
