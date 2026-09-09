@@ -482,6 +482,8 @@ html.tone-light .nav-list a {color: var(--ink);}
 	transition: opacity 0.8s ease, transform 0.8s ease;
 }
 .inquiry-form.is-in {opacity: 1;transform: none;}
+/*display:gridを指定しているせいで、hidden属性だけでは非表示にならない為、明示的に上書きする*/
+.inquiry-form[hidden] {display: none;}
 
 .field label {
 	display: block;

@@ -216,6 +216,9 @@ if (toTopBtn) {
 var inquiryForm = document.getElementById("inquiryForm");
 var inquiryDone = document.getElementById("inquiryDone");
 var inquiryError = document.getElementById("inquiryError");
+var inquiryEmail = document.getElementById("cf-email");
+var inquiryEmailConfirm = document.getElementById("cf-email-confirm");
+var inquiryEmailMismatch = document.getElementById("cf-email-mismatch");
 
 if (inquiryForm) {
 	var submitBtn = inquiryForm.querySelector(".field-submit");
@@ -227,6 +230,14 @@ if (inquiryForm) {
 			inquiryForm.reportValidity();
 			return;
 		}
+
+		/*メールアドレスの入力ミスを防ぐ為、確認用の2つが一致しているかをチェックする*/
+		if (inquiryEmail && inquiryEmailConfirm && inquiryEmail.value !== inquiryEmailConfirm.value) {
+			if (inquiryEmailMismatch) inquiryEmailMismatch.hidden = false;
+			inquiryEmailConfirm.focus();
+			return;
+		}
+		if (inquiryEmailMismatch) inquiryEmailMismatch.hidden = true;
 
 		if (inquiryError) inquiryError.hidden = true;
 		if (submitBtn) submitBtn.disabled = true;
