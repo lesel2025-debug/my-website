@@ -529,6 +529,9 @@ html.tone-light .nav-list a {color: var(--ink);}
 }
 
 .field-note {margin: -0.6rem 0 0;font-size: 0.78rem;color: #fff;}
+/*.field内(入力欄の直後)に置く場合は、上のマイナスマージンだと入力欄の下線と重なってしまう為、
+  通常の余白に戻す(メールアドレス確認用の不一致メッセージなど)*/
+.field .field-note {margin-top: 0.5rem;}
 
 .field-submit {
 	position: relative;
