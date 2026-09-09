@@ -216,6 +216,7 @@ if (toTopBtn) {
 var inquiryForm = document.getElementById("inquiryForm");
 var inquiryDone = document.getElementById("inquiryDone");
 var inquiryError = document.getElementById("inquiryError");
+var inquiryLead = document.getElementById("inquiryLead");
 var inquiryEmail = document.getElementById("cf-email");
 var inquiryEmailConfirm = document.getElementById("cf-email-confirm");
 var inquiryEmailMismatch = document.getElementById("cf-email-mismatch");
@@ -254,6 +255,7 @@ if (inquiryForm) {
 		}).then(function (res) {
 			if (!res.ok) throw new Error("send failed");
 			inquiryForm.hidden = true;
+			if (inquiryLead) inquiryLead.hidden = true;
 			if (inquiryDone) inquiryDone.hidden = false;
 		}).catch(function () {
 			if (submitBtn) submitBtn.disabled = false;
