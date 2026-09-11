@@ -210,57 +210,41 @@ if (toTopBtn) {
 
 //===============================================================
 // お問い合わせフォーム
-// FormSubmit(https://formsubmit.co/)のAJAXエンドポイントに送信し、
-// ページ遷移せずにそのまま「送信完了」表示に切り替える
+// FormSubmit(https://formsubmit.co/)へ通常のフォーム送信(ページ遷移あり)で送る。
+// 自動返信(_autoresponse)はreCAPTCHA有効・AJAXでない事が条件の為、あえてAJAX化せず
+// 素直にPOSTし、_nextで指定した戻り先URL(?contact=sent)をmain.js側で検知して
+// 「送信完了」表示に切り替える(ページ遷移はあるが、見た目上は近い体験にしている)
 //===============================================================
 var inquiryForm = document.getElementById("inquiryForm");
 var inquiryDone = document.getElementById("inquiryDone");
-var inquiryError = document.getElementById("inquiryError");
 var inquiryLead = document.getElementById("inquiryLead");
 var inquiryEmail = document.getElementById("cf-email");
 var inquiryEmailConfirm = document.getElementById("cf-email-confirm");
 var inquiryEmailMismatch = document.getElementById("cf-email-mismatch");
 
+/*_nextでこのページに戻ってきた直後かどうかを、URLの?contact=sentで判定する*/
+if (new URLSearchParams(window.location.search).get("contact") === "sent") {
+	if (inquiryForm) inquiryForm.hidden = true;
+	if (inquiryLead) inquiryLead.hidden = true;
+	if (inquiryDone) inquiryDone.hidden = false;
+	/*再読み込みで送信完了状態に戻ってしまわない様に、URLからパラメータを消しておく*/
+	window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+}
+
 if (inquiryForm) {
 	var submitBtn = inquiryForm.querySelector(".field-submit");
 
 	inquiryForm.addEventListener("submit", function (e) {
-		e.preventDefault();
-
-		if (!inquiryForm.checkValidity()) {
-			inquiryForm.reportValidity();
-			return;
-		}
-
-		/*メールアドレスの入力ミスを防ぐ為、確認用の2つが一致しているかをチェックする*/
+		/*メールアドレスの入力ミスを防ぐ為、確認用の2つが一致しているかをチェックする。
+		  ここで問題なければpreventDefaultせず、通常通りFormSubmitへ送信される*/
 		if (inquiryEmail && inquiryEmailConfirm && inquiryEmail.value !== inquiryEmailConfirm.value) {
+			e.preventDefault();
 			if (inquiryEmailMismatch) inquiryEmailMismatch.hidden = false;
 			inquiryEmailConfirm.focus();
 			return;
 		}
 		if (inquiryEmailMismatch) inquiryEmailMismatch.hidden = true;
-
-		if (inquiryError) inquiryError.hidden = true;
 		if (submitBtn) submitBtn.disabled = true;
-
-		var ajaxAction = inquiryForm.action.replace(
-			"formsubmit.co/",
-			"formsubmit.co/ajax/"
-		);
-
-		fetch(ajaxAction, {
-			method: "POST",
-			headers: {"Accept": "application/json"},
-			body: new FormData(inquiryForm)
-		}).then(function (res) {
-			if (!res.ok) throw new Error("send failed");
-			inquiryForm.hidden = true;
-			if (inquiryLead) inquiryLead.hidden = true;
-			if (inquiryDone) inquiryDone.hidden = false;
-		}).catch(function () {
-			if (submitBtn) submitBtn.disabled = false;
-			if (inquiryError) inquiryError.hidden = false;
-		});
 	});
 }
 

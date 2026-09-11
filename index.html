@@ -193,11 +193,15 @@
 <!--FormSubmit(https://formsubmit.co/)経由で送信。アカウント登録不要のフォーム中継サービス。
     メールアドレスを直接書くとスパム業者に拾われる恐れがある為、有効化後にFormSubmitが
     発行したランダムなID(ハッシュ)を使っている。送信先は現在lesel2025@gmail.com(仮)。
-    contact@sioful.comのメールが用意でき次第、あらためてそちらで有効化してIDを差し替える-->
+    contact@sioful.comのメールが用意でき次第、あらためてそちらで有効化してIDを差し替える。
+    ※自動返信(_autoresponse)はreCAPTCHA有効・AJAX送信でない事が条件の為、
+    _captchaは指定せず(=有効)、JS側もAJAXにせず通常のPOST送信のままにしている。
+    送信後は_nextで指定したURLへ遷移し、main.js側でその印(?contact=sent)を見て
+    「送信完了」表示に切り替える-->
 <form id="inquiryForm" class="inquiry-form" action="https://formsubmit.co/e76f550521dc34ce37efe41274944e6e" method="post" novalidate>
 <input type="hidden" name="_subject" value="【SiOFUL DESIGN】お問い合わせがありました">
 <input type="hidden" name="_template" value="table">
-<input type="hidden" name="_captcha" value="false">
+<input type="hidden" name="_next" value="https://sioful.com/?contact=sent#contact">
 <!--自動返信メール(FormSubmitが送信者本人のメールアドレス宛に自動送信)-->
 <input type="hidden" name="_autoresponse" value="この度はSiOFUL DESIGN（塩ふるデザイン）へお問い合わせいただき、誠にありがとうございます。内容を確認の上、担当より折り返しご連絡いたします。今しばらくお待ちくださいませ。">
 
@@ -235,8 +239,6 @@
 </div>
 
 <p class="field-note">ご入力いただいた情報は、お問い合わせへの対応以外の目的では使用いたしません。</p>
-
-<p id="inquiryError" class="field-note" hidden>送信に失敗しました。お手数ですが時間をおいて再度お試しください。</p>
 
 <button type="submit" class="field-submit"><span>送信する</span></button>
 
